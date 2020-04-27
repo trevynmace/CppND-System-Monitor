@@ -20,6 +20,7 @@ System::System() : os_(LinuxParser::OperatingSystem()), kernel_(LinuxParser::Ker
     {
         int pid = std::stoi(std::to_string(process));
         this -> processes_.push_back(Process(pid));
+        std::sort(processes_.begin(), processes_.end(), [](const Process& lhs, const Process& rhs) { return lhs.CpuUtilization() > rhs.CpuUtilization(); });
     }
 };
 
