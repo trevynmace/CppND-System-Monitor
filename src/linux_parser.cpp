@@ -10,6 +10,7 @@ using std::stof;
 using std::string;
 using std::to_string;
 using std::vector;
+using std::stol;
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
@@ -58,7 +59,8 @@ vector<int> LinuxParser::Pids() {
       // Is every character of the name a digit?
       string filename(file->d_name);
       if (std::all_of(filename.begin(), filename.end(), isdigit)) {
-        int pid = stoi(filename);
+        // std::cout << "filename: " << filename << ":\n";
+        long pid = std::stol(filename);
         pids.push_back(pid);
       }
     }
@@ -80,7 +82,7 @@ float LinuxParser::MemoryUtilization()
 
     while (getline(ifs, line))
     {
-      std::replace(line.begin(), line.end(), ":", " ");
+      std::replace(line.begin(), line.end(), ':', ' ');
       std::istringstream iss (line);
       string k;
       double v;
@@ -130,7 +132,7 @@ long LinuxParser::Jiffies()
 
   for (int i = kUser_; i <= kSteal_; i++)
   {
-    jiffies += stof(cpu[i]);
+    jiffies += std::stof(cpu[i]);
   }
 
   return jiffies;
@@ -153,7 +155,8 @@ long LinuxParser::ActiveJiffies(int pid)
       std::istream_iterator<string> begin(iss), end;
       vector<string> segments (begin, end);
 
-      jiffies += stol(segments[13]) + stol(segments[14]) + stol(segments[15]) + stol(segments[16]);
+      // std::cout << "13: " << segments[13] << ": 14: " << segments[14] << ": 15: " << segments[15] << ": 16: " << segments[16] << "\n";
+      jiffies += std::stol(segments[13]) + std::stol(segments[14]) + std::stol(segments[15]) + std::stol(segments[16]);
     }
   }
 
@@ -171,12 +174,13 @@ long LinuxParser::ActiveJiffies()
 long LinuxParser::IdleJiffies()
 {
   auto cpu = CpuUtilization();
-  auto idleJiffies = 0;
+  long idleJiffies = 0;
 
   for (int i = kIdle_; i <= kIOwait_; i++)
   {
-    auto current = cpu[i];
-    idleJiffies += stol(current);
+    string current = cpu[i];
+    // std::cout << "current: " << current << ":\n";
+    idleJiffies += std::stol(current);
   }
 
   return idleJiffies;
@@ -224,7 +228,7 @@ int LinuxParser::TotalProcesses()
       {
         if (k == "processes")
         {
-          processes = stoi(v);
+          processes = std::stoi(v);
           break;
         }
       }
@@ -252,7 +256,7 @@ int LinuxParser::RunningProcesses()
       {
         if (k == "procs_running")
         {
-          processes = stoi(v);
+          processes = std::stoi(v);
           break;
         }
       }
@@ -296,7 +300,7 @@ string LinuxParser::Ram(int pid[[maybe_unused]])
         if (k == "VmSize:")
         {
           auto ramInKb = v;
-          auto ramInMb = stof(ramInKb) / 1024.0;
+          auto ramInMb = std::stof(ramInKb) / 1024.0;
           return to_string(ramInMb);
         }
       }
@@ -347,7 +351,7 @@ string LinuxParser::User(int pid)
     string line;
     while (getline(ifs, line))
     {
-      std::replace(line.begin(), line.end(), ":", " ");
+      std::replace(line.begin(), line.end(), ':', ' ');
       std::istringstream iss (line);
       string k, v;
       string uid;
@@ -381,7 +385,8 @@ long LinuxParser::UpTime(int pid)
       std::istream_iterator<string> begin(iss), end;
       vector<string> segments (begin, end);
 
-      auto time = stol(segments[21]);
+      // std::cout << "21: " << segments[21] << ":\n";
+      long time = std::stol(segments[21]);
       timeResult = time / sysconf(_SC_CLK_TCK);
     }
   }
